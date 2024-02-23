@@ -1,0 +1,56 @@
+download the packages: 
+Microsoft.AspNetCore.Identity.EntityFrameworkCore
+Microsoft.EntityFrameworkCore.SqlServe
+Microsoft.EntityframworkCore.Design
+Microsoft.EntityframworkCore.tools
+
+create a AppDbContext class and MyUser class. 
+
+public class AppDbContext(DbContextOptions<AppDbContext> options) :
+    IdentityDbContext<MyUser>(options){}
+
+public class MyUser : IdentityUser{here u can add custom stuff like adress or phone.}
+_______________________________________________________________________________
+in program.cs: 
+
+builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
+builder.Services.AddAuthorizationBuilder();
+builder.Services.AddDbContext<AppDbContext>(
+    options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddIdentityCore<MyUser>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddApiEndpoints();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost", builder =>
+    {
+        builder.WithOrigins("http://localhost:5173")
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials();
+    });
+});
+
+app.UseCors("AllowLocalhost");
+app.MapIdentityApi<MyUser>();
+
+example: app.MapGet("/", (ClaimsPrincipal user) => $"Hello {user.Identity!.Name}")
+____________________________________________________________________________________
+create a new controller for the custom info u put in user. 
+a new RegisterModel class to handle to new info required for the user to register, and LoginModel. 
+______________________________________________________________________________________
+in order to get stuff from frontend to backend, u have to add credentials: 'include' to your fetch function. 
+You can also pass a query directly in the fetch link. 
+
+
+
+
+
+
+
+// builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
+// OR
+//builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+//This line configures authentication services for your application. It adds the
+//Bearer token authentication scheme (IdentityConstants.BearerScheme), which is commonly used for securing APIs.
